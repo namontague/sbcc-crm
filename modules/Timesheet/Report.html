@@ -1,0 +1,81 @@
+<!-- BEGIN: main -->
+
+<form name="EditView" method="GET" action="index.php">
+<input type="hidden" name="module" value="Timesheet">
+<input type="hidden" name="action" value="Report">
+
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr>
+	<td style="padding-bottom: 2px;">
+	<span class="required">{APP.LBL_REQUIRED_SYMBOL}</span><b>{MOD.LBL_PROJECT}</b> <select name="project_id">{PROJECT_FILTER}</select> &nbsp;<b>{MOD.LBL_INVOICE_NAME}</b> <select name="invoice_id">{INVOICE_FILTER}</select>&nbsp;<b>{MOD.LBL_EMPLOYEE}</b> <select name="user_id">{USER_FILTER}</select> &nbsp; <b>{MOD.LBL_START_DATE}</b> <input name="date_start" onblur="parseDate(this, '{CALENDAR_DATEFORMAT}');" id="date_start_field" size="11" maxlength="10" type="text" value="{date_start}" /> <img src="themes/default/images/jscalendar.gif" alt="{APP.LBL_ENTER_DATE}" id="date_start_picker" align="absmiddle" />&nbsp;<i>{USER_DATEFORMAT}</i>
+	 &nbsp; <b>{MOD.LBL_END_DATE}</b> <input name="date_end" onblur="parseDate(this, '{CALENDAR_DATEFORMAT}');" id="date_end_field" size="11" maxlength="10" type="text" value="{date_end}" /> <img src="themes/default/images/jscalendar.gif" alt="{APP.LBL_ENTER_DATE}" id="date_end_picker" align="absmiddle" />&nbsp;<i>{USER_DATEFORMAT}</i>
+	 <input type="submit" value=" {MOD.LBL_RUN_REPORT} " class="button" />
+	</td>
+	</tr>
+</table>
+
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="h3Row">
+<tr>
+<td>
+ <table border="0" cellspacing="0" cellpadding="5">
+ <tr style="font-weight: bold">
+ <td colspan="4"></td><td>{MOD.LBL_REPORT_TOTAL_ACTUAL}</td><td>{MOD.LBL_REPORT_TOTAL_BILLABLE}</td>
+ </tr>
+ <tr>
+  <td></td>
+  <td></td>
+  <td></td><td></td>
+  <td class="dataLabel">{actual}</td>
+  <td class="dataLabel">{billable}</td>
+ </tr>
+ <tr>
+  <td colspan="6"><hr style="heigh: 1px" size="1"></td>
+ </tr>
+ <tr style="font-weight: bold">
+ <td>{MOD.LBL_REPORT_DATE_BOOKED}</td><td>{MOD.LBL_INVOICE_NAME}</td><td>{MOD.LBL_REPORT_EMPLOYEE}</td><td colspan="3"></td>
+ </tr>
+ <!-- BEGIN: entries -->
+ <tr>
+  <td>{ENTRY.date_booked}</td><td>{ENTRY.invoice_name}</td>
+  <td><a href="index.php?module=Users&action=DetailView&record={ENTRY.user_id}">{ENTRY.user_name}</a></td>
+  <td>
+  <!-- BEGIN: entry_parent --><span style="margin-right: 20px">&nbsp;</span><!-- END: entry_parent -->
+  {ENTRY.parent_type}: <b><a href="index.php?module={ENTRY.parent_type}&action=DetailView&record={ENTRY.parent_id}">{ENTRY.parent_name}</a></b>
+  </td>
+  <td>{ENTRY.actual}</td>
+  <td>{ENTRY.billable}</td>
+ <!-- END: entries -->
+ <!-- BEGIN: bottom -->
+ <tr style="font-weight: bold">
+ <td>{MOD.LBL_REPORT_DATE_BOOKED}</td><td>{MOD.LBL_REPORT_EMPLOYEE}</td><td colspan="3"></td>
+ </tr>
+ <tr>
+  <td colspan="5"><hr style="heigh: 1px" size="1"></td>
+ </tr>
+ <tr>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td class="dataLabel">{actual}</td>
+  <td class="dataLabel">{billable}</td>
+ </tr>
+ <tr style="font-weight: bold">
+ <td colspan="3"></td><td>{MOD.LBL_REPORT_TOTAL_ACTUAL}</td><td>{MOD.LBL_REPORT_TOTAL_BILLABLE}</td>
+ </tr>
+ <!-- END: bottom -->
+ </table>
+</td></tr></table>
+</div>
+</form>
+<script type="text/javascript">
+Calendar.setup ({
+   inputField : "date_start_field", ifFormat : "{CALENDAR_DATEFORMAT}", showsTime : false, button : "date_start_picker", singleClick : true, step : 1
+});
+Calendar.setup ({
+   inputField : "date_end_field", ifFormat : "{CALENDAR_DATEFORMAT}", showsTime : false, button : "date_end_picker", singleClick : true, step : 1
+});
+</script>
+{JAVASCRIPT}
+<!-- END: main -->
+

@@ -1,0 +1,68 @@
+
+<!-- BEGIN: main -->
+<script type="text/javascript" src="modules/Administration/javascript/connectorSyncConfig.js"></script>
+<form name="ConfigureSettings" id="EditView" method="POST" >
+	<input type="hidden" name="module" value="ERPSync">
+	<input type="hidden" name="action">
+	<input type="hidden" name="return_module" value="{RETURN_MODULE}">
+	<input type="hidden" name="return_action" value="{RETURN_ACTION}">
+	<input type="hidden" name="source_form" value="config" />
+
+  
+    
+    
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+	<tr>
+
+		<td align="right" nowrap>
+			<span class="required">{APP.LBL_REQUIRED_SYMBOL}</span> {APP.NTC_REQUIRED}
+		</td>
+	</tr>
+	<tr>
+		<td colspan=2>
+			<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tabForm">
+				<tr>
+					<td>
+						
+                            <table id="sync_options" cellpadding="0" cellspacing="0" border="0" style="width:25%;" >
+                                <tr>
+                                    <td style="border:none;">Batch Size</td>
+                                    <td style="border:none;">
+                                        <input type="text" size="5" id="batch_size" class="batch_size" name="batch_size" value="1000" />
+                                        
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="border:none;">Master</td>
+                                    <td style="border:none;">
+                                        <input type="radio"  class="master_option" name="master_option" value="openbravo">Openbravo
+                                        <input type="radio" class="master_option" name="master_option" value="sugarcrm">Sugar
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="border:none;">Sync Children</td>
+                                    <td style="border:none;">
+                                        <input type="checkbox" id="sync_children" name="sync_children" value="1">
+                                    </td>
+                                </tr>
+                            </table>
+                      
+					</td>
+				</tr>
+			</table>	
+		</td>
+	</tr>
+</table>
+<script type="text/javascript">
+    setup();
+</script>   
+<P></P>
+
+<div style="padding-top:2px;">
+    <input title="Sync" id="sync_button" class="button" onclick="sync_openbrave_v2();" type="button" name="button" value="Start Sync" disabled>
+			<input title="{APP.LBL_CANCEL_BUTTON_TITLE}" class="button" onclick="this.form.action.value='{RETURN_ACTION}'; this.form.module.value='{RETURN_MODULE}';" type="submit" name="button" value=" {APP.LBL_CANCEL_BUTTON_LABEL} ">
+</div>
+
+	</form>
+{JAVASCRIPT}
+<!-- END: main -->

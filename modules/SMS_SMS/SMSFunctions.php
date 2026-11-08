@@ -1,0 +1,436 @@
+<?php
+if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
+/*********************************************************************************
+ * SugarCRM is a customer relationship management program developed by
+ * SugarCRM, Inc. Copyright (C) 2004 - 2009 SugarCRM Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License version 3 as published by the
+ * Free Software Foundation with the addition of the following permission added
+ * to Section 15 as permitted in Section 7(a): FOR ANY PART OF THE COVERED WORK
+ * IN WHICH THE COPYRIGHT IS OWNED BY SUGARCRM, SUGARCRM DISCLAIMS THE WARRANTY
+ * OF NON INFRINGEMENT OF THIRD PARTY RIGHTS.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, see http://www.gnu.org/licenses or write to the Free
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ * 02110-1301 USA.
+ *
+ * You can contact SugarCRM, Inc. headquarters at 10050 North Wolfe Road,
+ * SW2-130, Cupertino, CA 95014, USA. or at email address contact@sugarcrm.com.
+ *
+ * The interactive user interfaces in modified source and object code versions
+ * of this program must display Appropriate Legal Notices, as required under
+ * Section 5 of the GNU General Public License version 3.
+ *
+ * In accordance with Section 7(b) of the GNU General Public License version 3,
+ * these Appropriate Legal Notices must retain the display of the "Powered by
+ * SugarCRM" logo. If the display of the logo is not reasonably feasible for
+ * technical reasons, the Appropriate Legal Notices must display the words
+ * "Powered by SugarCRM".
+ ********************************************************************************/
+/*********************************************************************************
+
+ ********************************************************************************/
+
+/**
+ * SMSFunctions.php
+ * This is a helper file used by the meta-data framework
+ * @see modules/SMS_SMS/vardefs.php (SMSFunctions)
+ * @author Collin Lee
+ */
+global $sugar_config;
+require_once('modules/SMS_SMS/APIClient2.php');
+
+
+//Get a list of SMS lists
+function getToListOpions($focus, $name = '', $value = '', $view = 'EditView') {
+  global $sugar_config;
+  $sms_list_id;
+
+  if(!isset($focus->id)) {
+    if (isset($_REQUEST['camp_id'])) {
+      $parentBean = BeanFactory::getBean('Camps', $_REQUEST['camp_id']);
+      $sms_list_id = $parentBean->sms_list_id;
+    } elseif (isset($_REQUEST['prospectlist_id'])) {
+      $parentBean = BeanFactory::getBean('ProspectLists', $_REQUEST['prospectlist_id']);
+      $sms_list_id = $parentBean->sms_list_id;
+    }
+  } else {
+    $sms_list_id = $focus->to_list_id;
+  }
+
+  if($view != 'EditView'){
+    return;
+  }
+
+  if($sugar_config['SMS_ACTIVE'] && !is_null($sms_list_id)) {
+    $smsAPI = new transmitsmsAPI($sugar_config['SMS_API_KEY'],$sugar_config['SMS_API_SECRET']);
+    $result = $smsAPI->getList($sms_list_id);
+    if($result->error->code=='SUCCESS') {
+      $toList[$result->id] = $result->name;
+    }
+  } else {
+    $toList = array(
+      'none' => 'none',
+    );
+  }
+  return $toList;
+}
+
+//Send SMS
+function sendSMS($vars) {
+  global $sugar_config;
+  $data = array();
+  $number_list = null;
+  $to_list_id = null;
+  if(empty($vars->to_list_id) || !isset($vars->to_list_id) || $vars->to_list_id == 'none'){
+    $vars->to_list_id = NULL;
+    $number_list = getNumbers($vars);
+  } else{
+    $to_list_id = (int)$vars->to_list_id;
+  }
+  if($sugar_config['SMS_ACTIVE']) {
+    $smsAPI = new transmitsmsAPI($sugar_config['SMS_API_KEY'],$sugar_config['SMS_API_SECRET']);
+
+    //$result = $smsAPI->sendSms($vars->message, $number_list, ($vars->caller_id=="Shared Number")?null:$vars->caller_id,($vars->send_later_date)?null:null,$to_list_id,null,null);
+    $result = $smsAPI->sendSms($vars->message, $number_list, '61481074423',($vars->send_later_date)?null:null,$to_list_id,null,null);
+
+    if($result->error->code=='SUCCESS') {
+      $data['success'] ="Message to {$result->recipients} recipients sent with ID {$result->message_id}, cost {$result->cost}";
+      $data['message_id'] = $result->message_id;
+      //$GLOBALS['log']->info("SMS returned success code of {$result->error->code}. Response Message: {$result->error->description}");
+      //$GLOBALS['log']->info($data['success']);
+    } else {
+      $data['data'] = $result->error->description;
+      //$GLOBALS['log']->info("SMS returned error code of {$result->error->code}. Response Message: {$result->error->description}");
+    }
+  }
+  return $data;
+
+}
+
+//Get numbers of contacts in Camps target list
+function getNumbers($focus, $name = '', $value = '', $view = 'DetailView') {
+  if($focus->to_list_id == "none" || empty($focus->to_list_id)){
+    $sqlQry = "select contacts.phone_mobile
+                  from camps c
+                  left join prospect_lists_prospects lp on lp.related_id = c.id and lp.related_type = 'Camps' and lp.deleted is false
+                  left join prospect_lists_prospects lp_c on lp.prospect_list_id = lp_c.prospect_list_id and lp_c.related_type = 'Contacts' and lp_c.deleted is false
+                  left join contacts on lp_c.related_id = contacts.id and contacts.deleted is false
+                  where 
+                  c.id = '{$focus->camp_id}'
+                  and 
+                  c.deleted is false;";
+    $res = $GLOBALS['db']->query($sqlQry);
+    if($res) {
+      $numberList = array();
+      while($row = $GLOBALS['db']->fetchByAssoc($res)) {
+        if(!is_null($row['phone_mobile'])) {
+          $numberList[] = $row['phone_mobile'];
+        }
+      }
+      return implode(", ", $numberList);
+    }
+  }
+  return null;
+}
+
+//Create a new SMS list
+function addList($focus){
+  global $sugar_config;
+  if($sugar_config['SMS_ACTIVE']) {
+    $smsAPI = new transmitsmsAPI($sugar_config['SMS_API_KEY'],$sugar_config['SMS_API_SECRET']);
+    $customFields= null;//array('custom1', 'custom2');
+
+    $name = "{$focus->name} {$focus->start_date}";
+    if(!empty($name) && $name != '') {
+      $result = $smsAPI->addList($name, $customFields);
+      if($result->error->code=='SUCCESS') {
+        return $result->id;
+      } else  {
+        echo "Error: {$result->error->description}";
+      }
+    }
+  }
+  return;
+}
+
+//Create a new SMS list
+function getList($id,$return_data = false){
+  global $sugar_config;
+  if($sugar_config['SMS_ACTIVE'] && !is_null($id)) {
+    $smsAPI = new transmitsmsAPI($sugar_config['SMS_API_KEY'],$sugar_config['SMS_API_SECRET']);
+
+    $result = $smsAPI->getList($id, 0, 1);
+    if(isset($result->error)) {
+      if($result->error->code=='SUCCESS') {
+        if($return_data){
+          return array('success'=>$result);
+        }
+        return $result->name;
+      } else  {
+        // echo "Error: {$result->error->description}";
+      }
+    } else{
+      // echo "Error: {$result->error->description}";
+    }
+  }
+  return;
+}
+
+//Add contact to SMS List
+function addToList($list_id, $contact){
+  global $sugar_config;
+
+  if($sugar_config['SMS_ACTIVE']) {
+    if(!empty($list_id) && !empty($contact->phone_mobile)) {
+      $smsAPI = new transmitsmsAPI($sugar_config['SMS_API_KEY'],$sugar_config['SMS_API_SECRET']);
+
+      $customFields= null;//array('custom1_value', 'custom2_value');
+
+      $number = str_replace(' ', '', $contact->phone_mobile);
+      if(substr($number, 0, 2) == '04'){
+        $number = "61".substr($number, 1);
+      }
+
+      if(isset($contact->do_not_sms) && $contact->do_not_sms == true) {
+        //do not add this contact to any lists
+        //skip
+        return true;;
+      }
+
+
+      $GLOBALS['log']->error("Adding to list: ".$list_id." - ".$number);
+      $result = $smsAPI->addToList($list_id, $number, $contact->first_name,$contact->last_name, $customFields);
+      $GLOBALS['log']->error("Result: ".print_r($result, true));
+      if($result->error->code=='SUCCESS' || $result->error->code == 'KEY_EXISTS') {
+        return true;
+      } else {
+        return $result;
+      }
+    }
+  }
+}
+
+//Remove contact from SMS List
+function deleteFromList($list_id, $contact) {
+  global $sugar_config;
+  if($sugar_config['SMS_ACTIVE']) {
+    if(!empty($list_id) && !empty($contact->phone_mobile)) {
+      $smsAPI = new transmitsmsAPI($sugar_config['SMS_API_KEY'],$sugar_config['SMS_API_SECRET']);
+      // this will delete member from provided list
+      $number = str_replace(' ', '', $contact->phone_mobile);
+      if(substr($number, 0, 2) == '04'){
+        $number = "61".substr($number, 1);
+      }
+      $result = $smsAPI->deleteFromList($list_id, $number);
+      if($result->error->code=='SUCCESS')  {
+        //echo "Member deleted from lists: ".implode(', ', $result->list_ids);
+      } else {
+        //echo "Error: {$result->error->description}";
+      }
+    }
+  }
+}
+
+//SMS add to list button
+function getSMSButton(){
+  return "<script type='text/javascript' src='modules/SMS_SMS/javascript/button.js'></script>
+            <input type='button' id='button_add_list' title='Create SMS List' value='Create SMS List' onClick='addList();' />
+            <img id='ajax_wait' alt='waiting' src='modules/SMS_SMS/img/ajax-loader.gif' style='display:none'>
+            <span id='button_info'></span>";
+
+}
+
+//SMS add to list button
+function getSMSSyncButton(){
+  return "<script type='text/javascript' src='modules/SMS_SMS/javascript/button.js'></script>
+            <input type='button' id='button_sync_list' title='Sync SMS List' value='Sync SMS List' onClick='syncList();' />
+            <img id='ajax_wait' alt='waiting' src='modules/SMS_SMS/img/ajax-loader.gif' style='display:none'>
+            <span id='button_info'></span>";
+
+}
+
+//Create a new SMS list
+function addListFromButton($name){
+  global $sugar_config;
+  if($sugar_config['SMS_ACTIVE']) {
+    $smsAPI = new transmitsmsAPI($sugar_config['SMS_API_KEY'],$sugar_config['SMS_API_SECRET']);
+    $customFields= null;//array('custom1', 'custom2');
+
+    //$name = "{$focus->name} {$focus->start_date}";
+    if(!empty($name) && $name != '') {
+      return $result = $smsAPI->addList($name, $customFields);
+
+    }
+  }
+  return;
+}
+
+//Add users to SMS list
+function syncListFromButton($list_id,$targets) {
+  global $sugar_config;
+  if($sugar_config['SMS_ACTIVE']) {
+    $smsAPI = new transmitsmsAPI($sugar_config['SMS_API_KEY'],$sugar_config['SMS_API_SECRET']);
+    foreach ($targets as $target) {
+      addToList($list_id, $target);
+    }
+  }
+  return getList($list_id,true);
+}
+
+
+function syncFullListFromButton($list_id,$targets) {
+  global $sugar_config;
+  $results = array('result'=>array());
+  if($sugar_config['SMS_ACTIVE']) {
+    $members = getFullList($list_id);
+    if(!isset($members['error'])) {
+      $add = array_diff_key ($targets , $members['members']);
+      $delete = array_diff_key ($members['members'],$targets);
+
+      //delete numbers not in crm
+      $smsAPI = new transmitsmsAPI($sugar_config['SMS_API_KEY'],$sugar_config['SMS_API_SECRET']);
+      foreach($delete as $deleteNumber) {
+        $result = $smsAPI->deleteFromList($list_id, $deleteNumber['adjustment']);
+        if($result->error->code=='SUCCESS') {
+          $results['result'][] = "Member deleted from list: {$deleteNumber['adjustment']}";
+        } else {
+          $results['result'][] = "Error: {$result->error->description} ({$deleteNumber['adjustment']})";
+        }
+      }
+      //validate number before sending
+      //add numbers not in sms tech
+
+      $count = 0;
+      foreach($add as $newNumber) {
+        if ($count % 2 == 1) sleep(1);
+        $result = $smsAPI->addToList($list_id, $newNumber['number'], $newNumber['first_name'],$newNumber['last_name']);
+        $count++;
+        if(isset($result->error)) {
+
+          if($result->error->code=='SUCCESS') {
+            $results['result'][] = "Member added to list: {$newNumber['number']}";
+          } elseif($result->error->code=='OPTOUT') {
+            //NEED TO OPT OUT THIS MOBILE NUMBER
+            $newNumber['person']->do_not_sms = true;
+            $newNumber['person']->save();
+            $results['result'][] = "Error - OPTOUT: {$result->error->description} ({$newNumber['number']})";
+          } elseif($result->error->code=='BAD_MOBILE' || $result->error->code=='FIELD_INVALID') {
+            //invalidate
+            $results['result'][] = "Error: {$result->error->description} ({$newNumber['number']})";
+          } else {
+            //if(isset($result->error)) {
+            $results['result'][] = "Error: {$result->error->description} ({$newNumber['number']})";
+            //} else{
+            //    $results['result'][] = "Error[{$result->code} ]: {$result->description} ({$newNumber['number']})";
+            //}
+
+          }
+        }else {//429 too many requests of 2r /s $result->code
+          $results['result'][] = "Error[{$result->code} ]: {$result->description}.";
+        }
+      }
+    }else{
+      return array('result' => array($members['error']));
+    }
+    $new_results = getList($list_id,true);
+    if(isset($new_results['success'])) {
+      array_unshift($results['result'], 'Active numbers: '.$new_results['success']->members_active.', Total numbers: '.$new_results['success']->members_total);
+    }
+  }
+  return $results;
+}
+
+//need to compare sms list with targets
+//add missing targets and remove sms contacts not in targets
+
+//$targets
+//$sms_members
+//$targets = add-to-list
+//$sms_members delete-from-list
+
+//Get Full SMS list
+function getFullList($id){
+  global $sugar_config;
+  if($sugar_config['SMS_ACTIVE'] && !is_null($id)) {
+    $smsAPI = new transmitsmsAPI($sugar_config['SMS_API_KEY'],$sugar_config['SMS_API_SECRET']);
+    $members_data = array();
+    $i = 1;
+    while($result = $smsAPI->getFullList($id,'all',$i++,100)) {
+      if($result->error->code == 'SUCCESS') {
+        if(!isset($result->members)) {
+          break;
+        }
+        foreach($result->members as $member) {
+          if($member->status == 'active') {
+            $number = (string)$member->msisdn;
+            if(in_array(substr($number, 0, 1), array('2','3','5','7','8')) ) {
+              $number = "0".$number;
+            }
+            if(!isset($members_data[$number])){
+              $members_data[$number] = array(
+                'number' => $member->msisdn,
+                'first_name' => $member->first_name,
+                'last_name' => $member->last_name,
+                'adjustment' => $number,
+              );
+            }else{
+              //return array('error' => "Error: {$member->msisdn} found twice in list");
+            }
+          }
+        }
+      }else  {
+        return array('error' => "Error: {$result->error->description}");
+      }
+    }
+    return array('members'=>$members_data);
+  }
+  return;
+}
+
+
+
+function updateListMember($list_id,$member){
+  global $sugar_config;
+  if($sugar_config['SMS_ACTIVE']) {
+    $smsAPI = new transmitsmsAPI($sugar_config['SMS_API_KEY'],$sugar_config['SMS_API_SECRET']);
+    $number = str_replace(' ', '', $member->phone_mobile);
+    if(substr($number, 0, 2) == '04') {
+      $number = "61".substr($number, 1);
+    }
+
+    $result =  $smsAPI->editListMember($list_id, $number, $member->first_name, $member->last_name);
+    if($result->error->code=='SUCCESS' || $result->error->code == 'KEY_EXISTS') {
+      return true;
+    } else {
+      return $result;
+    }
+  }
+}
+
+function optOutMemberAllLists($member){
+  global $sugar_config;
+  if($sugar_config['SMS_ACTIVE']) {
+    $smsAPI = new transmitsmsAPI($sugar_config['SMS_API_KEY'],$sugar_config['SMS_API_SECRET']);
+    $number = str_replace(' ', '', $member->phone_mobile);
+    if(substr($number, 0, 2) == '04') {
+      $number = "61".substr($number, 1);
+    }
+
+    $result =  $smsAPI->optoutListMember('0', $number);
+    if($result->error->code=='SUCCESS' || $result->error->code == 'KEY_EXISTS') {
+      return true;
+    } else {
+      return $result;
+    }
+  }
+}
+
+?>

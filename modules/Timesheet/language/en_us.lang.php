@@ -1,0 +1,96 @@
+<?php
+if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
+$mod_strings = array (
+	'ERR_DELETE_RECORD' => 'A record number must be specified to delete the RFQ.',
+	'LBL_ID' => 'ID:',
+  'LBL_ASSIGNED_TO_ID' => 'Employee',
+  'LBL_ACTUAL' => 'Actual Hrs:',
+  'LBL_BILLABLE' => 'Billable Hrs:',
+  'LBL_DESCRIPTION' => 'Description:',
+  'LBL_TEXT_FOR_BILL' => 'Text For Bill:',
+  'LBL_STATUS' => 'Invoiced:',
+  'LBL_DATE_BOOKED' => 'Book Date:',
+  'LBL_PARENT' => 'Relate To:',
+  'LBL_EMPLOYEE' => 'Employee:',
+  'LBL_SELECT_FROM_DROPDOWN' => 'Please make a selection from the Related To dropdown first.',
+
+	'LBL_LIST_FORM_TITLE' => 'Timesheet List',
+  'LBL_LIST_EMPLOYEE' => 'Employee',
+  'LBL_LIST_PARENT' => 'Relate To',
+  'LBL_LIST_ACTUAL' => 'Actual Hrs',
+  'LBL_LIST_DATE_BOOKED' => 'Book Date',
+  'LBL_LIST_STATUS' => 'Invoiced',
+  'LBL_LIST_BILLABLE' => 'Billable Hrs',
+    'LBL_LIST_INVOICE' => 'Invoice No.',
+	'LBL_MODULE_NAME' => 'Timesheet',
+  'LBL_FILL_MATRIX' => 'Fill Matrix',
+  'LBL_FILL_DAILY_MATRIX' => 'Fill Daily Matrix',
+	'LBL_MODULE_TITLE' => 'Timesheet: Home',
+	'LBL_NEW_FORM_TITLE' => 'Create Timesheet',
+	'LBL_SEARCH_FORM_TITLE' => 'Timesheet Search',
+	'LNK_NEW_TIMESHEET' => 'Create Timesheet',
+  'LNK_NEW_MATRIX_TIMESHEET' => 'Fill Matrix Timesheet',
+  'LNK_NEW_DAILY_MATRIX_TIMESHEET' => 'Fill Daily Matrix Timesheet',
+	'LNK_TIMESHEET_LIST' => 'Timesheet List',
+  'LBL_TIMESHEET_SUBPANEL_TITLE' => 'Timesheet',
+
+  'LBL_LIST_ACCOUNT_NAME' => 'Account Name',
+  
+  'LBL_SUNDAY' => 'Sun',
+  'LBL_MONDAY' => 'Mon',
+  'LBL_TUESDAY' => 'Tue',
+  'LBL_WEDNESDAY' => 'Wed',
+  'LBL_THURSDAY' => 'Thu',
+  'LBL_FRIDAY' => 'Fri',
+  'LBL_SATURDAY' => 'Sat',
+
+  'LBL_LAST_WEEK' => 'last week',
+  'LBL_NEXT_WEEK' => 'next week',
+  'LBL_WEEK' => 'Week',
+
+  'LBL_PREV_DAY' => 'prev day',
+  'LBL_NEXT_DAY' => 'next day',
+
+  'LBL_TODAY' => 'Today',
+
+  'LBL_LIST_TOTAL' => 'Total',
+  'LBL_REPORT' => 'Report',
+  'LBL_START_DATE' => 'Start Date:',
+  'LBL_END_DATE' => 'End Date:',
+  'LNK_REPORT' => 'Report',
+  'LBL_PROJECT' => 'Project:',
+  'LBL_RUN_REPORT' => 'Run Report',
+  'LBL_REPORT_TOTAL_ACTUAL' => 'Total Actual Hrs',
+  'LBL_REPORT_TOTAL_BILLABLE' => 'Total Billable Hrs',
+  'LBL_REPORT_DATE_BOOKED' => 'Book Date',
+  'LBL_REPORT_EMPLOYEE' => 'Employee',
+
+  'LBL_ACCOUNT_ID' => 'Account ID',
+  'LBL_PROJECT_ID' => 'Project ID',
+  'LBL_ACCOUNTS' => 'Accounts',
+  'LBL_PROJECTS' => 'Projects',
+
+  'LBL_TYPE_PROJECT' => 'Project',
+  'LBL_TYPE_PROJECTTASK' => 'Project Task',
+  'LBL_TYPE_CASES' => 'Case',
+  'LBL_TYPE_TASKS' => 'Task',
+  'LBL_TYPE_MEETINGS' => 'Meeting',
+  'LBL_TYPE_CALLS' => 'Call',
+  'LBL_TYPE_ACCOUNTS' => 'Account',
+  'LBL_TYPE_LEADS' => 'Lead',
+  'LBL_TYPE_OPPORTUNITIES' => 'Opportunity',
+  'LBL_TYPE_BUGS' => 'Bug',
+  'LBL_TYPE_PROSPECTS' => 'Prospect',
+  'LBL_TYPE_CONTACTS' => 'Contact',
+
+  'LBL_START_TIMER' => 'Start Timer',
+  'LBL_STOP_TIMER' => 'Stop Timer',
+  'LNK_TIMER_CONFIG' => 'Config Timer Reminder',
+
+  //EINTEL
+  'LBL_INVOICE_NAME' => 'Invoice',
+  'LBL_INVOICE_ID' => 'Invoice',
+  'LBL_TYPE_TASK' => 'Task',
+);
+
+?>

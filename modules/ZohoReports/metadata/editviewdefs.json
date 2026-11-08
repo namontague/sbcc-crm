@@ -1,0 +1,13 @@
+{
+	"EditView": {
+		"panels": {
+			"default": [
+				["name"],
+				["description"], 
+				{"name": "url", "label": "LBL_URL"},
+				["status"],
+				["parameter"]
+			]
+		}
+	}
+}

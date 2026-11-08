@@ -1,0 +1,143 @@
+<!-- BEGIN: main -->
+<script language="javascript" src="modules/Timesheet/ajax.js?1"></script>
+<form name="EditMatrix" method="GET" action="index.php">
+<input type="hidden" name="module" value="Timesheet">
+<input type="hidden" name="record" value="{ID}">
+<input type="hidden" name="day">
+<input type="hidden" name="action" value="EditDailyMatrix">
+<input type="hidden" name="return_module" value="{RETURN_MODULE}">
+<input type="hidden" name="return_id" value="{RETURN_ID}">
+<input type="hidden" name="return_action" value="{RETURN_ACTION}">
+</form>
+
+<form id="EditView" name="EditView" method="POST" action="index.php">
+<input type="hidden" name="module" value="Timesheet">
+<input type="hidden" name="record" value="{ID}">
+<input type="hidden" name="isDuplicate" value=false>
+<input type="hidden" name="action">
+<input type="hidden" name="ajax">
+<input type="hidden" name="sugar_body_only">
+<input type="hidden" name="return_module" value="{RETURN_MODULE}">
+<input type="hidden" name="return_id" value="{RETURN_ID}">
+<input type="hidden" name="return_action" value="{RETURN_ACTION}">
+<input type="hidden" name="return_url" value="index.php?module=Timesheet&action=index">
+
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr>
+	<td style="padding-bottom: 2px;">
+			<input title="{APP.LBL_SAVE_BUTTON_TITLE}" accessKey="{APP.LBL_SAVE_BUTTON_KEY}" class="button" onclick="this.form.action.value='SaveDailyMatrix';this.form.submit()" type="button" name="button" value="  {APP.LBL_SAVE_BUTTON_LABEL}  " > 
+			<input title="{APP.LBL_CANCEL_BUTTON_TITLE}" accessKey="{APP.LBL_CANCEL_BUTTON_KEY}" class="button" onclick="this.form.action.value='{RETURN_ACTION}'; this.form.module.value='{RETURN_MODULE}'; this.form.record.value='{RETURN_ID}'; clearFormVars(this.form)" type="submit" name="button" value="  {APP.LBL_CANCEL_BUTTON_LABEL}  ">
+	</td>
+ <td>
+  <input onclick="document.forms['EditMatrix'].day.value = ({DAYUNIXTIME} - 3600 * 24); document.forms['EditMatrix'].submit();" type="button" class="button" value=" &laquo; {MOD.LBL_PREV_DAY} ">
+   &nbsp;<span style="margin-left: 10px; margin-right: 10px; font-weight: bold; color: #990033">{DAY_OF_WEEK} {DAY}</span>&nbsp;
+  <input  onclick="document.forms['EditMatrix'].day.value = ({DAYUNIXTIME} + 3600 * 24); document.forms['EditMatrix'].submit();" type="button" class="button" value=" {MOD.LBL_NEXT_DAY} &raquo; ">&nbsp;
+  <input  onclick="document.forms['EditMatrix'].day.value = ''; document.forms['EditMatrix'].submit();" type="button" class="button" value=" {MOD.LBL_TODAY} "></td>
+	<td align="right" nowrap><span class="required">{APP.LBL_REQUIRED_SYMBOL}</span>  {APP.NTC_REQUIRED}</td>
+	<td align="right">{EDIT_ADMIN}</td>
+	</tr>
+</table>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tabForm">
+<tr>
+<td>
+ <table border="0" cellspacing="0" cellpadding="0">
+ <tr valign="top">
+  <td class="dataLabel"></td>
+  <td class="dataLabel" nowrap="nowrap" style="text-align:center">{DAY_OF_WEEK} {DAY}</td>
+  <td class="dataLabel" nowrap="nowrap" style="text-align:center">{MOD.LBL_DESCRIPTION}</td>
+ </tr>
+
+ <!-- BEGIN: matrix_row -->
+ <tr>
+  <td class="dataLabel">
+  <!-- BEGIN: matrix_parent --><span style="margin-left:{MATRIX.depth}"></span><!-- END: matrix_parent --><span style="{MATRIX.font}">{MATRIX.type}: <b><a href="index.php?module={MATRIX.type}&action=DetailView&record={MATRIX.id}">{MATRIX.name}</a></b></span>
+
+  <!-- BEGIN: matrix_account_project -->
+  (<a href="index.php?module=Accounts&action=DetailView&record={MATRIX_accounts.account_id}">{MATRIX_accounts.account_name}</a>)
+  <!-- END: matrix_account_project -->
+
+  <!-- BEGIN: matrix_account -->
+  (<a href="index.php?module=Accounts&action=DetailView&record={MATRIX.account_id}">{MATRIX.account_name}</a>)
+  <!-- END: matrix_account -->
+  </td>
+  
+  <!-- BEGIN: matrix_saubrow -->
+  <!--<td class="dataField" align="center">
+    <input type="hidden" name="records[{MATRIX.id}.{MATRIX.date}.{MATRIX.timesheet_id}]" value="{MATRIX.timesheet_id}" {MATRIX.disabled} />
+    <input type="text" size="3" onfocus="storeValue(this.value)" onblur="updateTotals(this.value)" name="data[{MATRIX.id}.{MATRIX.type}.{MATRIX.date}.{MATRIX.timesheet_id}]" value="{MATRIX.actual}"/>
+  </td>
+  <td class="dataField" align="center" style="padding-right: 5px; padding-left: 5px">
+    <textarea style="width: 250px; height: 50px" name="description[{MATRIX.id}.{MATRIX.type}.{MATRIX.date}.{MATRIX.timesheet_id}]">{MATRIX.description}</textarea>
+  </td>-->
+  <!-- END: matrix_saubrow -->
+      <!-- BEGIN: matrix_subrow -->
+    <tr>
+        <td></td>
+      <td class="dataField" align="center">
+        <input type="hidden" name="records[{MATRIX.id}.{MATRIX.date}.{MATRIX.timesheet_id}]" value="{MATRIX.timesheet_id}" {MATRIX.disabled} />
+        <input type="text" size="3" onfocus="storeValue(this.value)" onblur="updateTotals(this.value)" name="data[{MATRIX.id}.{MATRIX.type}.{MATRIX.date}.{MATRIX.timesheet_id}]" value="{MATRIX.actual}"/>
+      </td>
+      <td class="dataField" align="center" style="padding-right: 5px; padding-left: 5px">
+        <textarea style="width: 250px; height: 50px" name="description[{MATRIX.id}.{MATRIX.type}.{MATRIX.date}.{MATRIX.timesheet_id}]">{MATRIX.description}</textarea>
+      </td>
+    </tr>
+      <!-- END: matrix_subrow -->
+ </tr>
+ <!-- END: matrix_row -->
+
+ <tr>
+  <td colspan="3"  style="border-top: 1px solid black">&nbsp;</td>
+ </tr>
+ <tr>
+  <td class="dataLabel"><b>{MOD.LBL_LIST_TOTAL}</b></td>
+  <td class="dataLabel" style="text-align:center; font-weight: bold"><span id="total"></span></td>
+  <td></td>
+ </tr>
+ </table>
+</td></tr></table>
+<div style="padding-top: 2px">
+	<input title="{APP.LBL_SAVE_BUTTON_TITLE}" accessKey="{APP.LBL_SAVE_BUTTON_KEY}" class="button" onclick="this.form.action.value='SaveDailyMatrix';this.form.submit()" type="button" name="button" value="  {APP.LBL_SAVE_BUTTON_LABEL}  " > 
+			<input title="{APP.LBL_CANCEL_BUTTON_TITLE}" accessKey="{APP.LBL_CANCEL_BUTTON_KEY}" class="button" onclick="this.form.action.value='{RETURN_ACTION}'; this.form.module.value='{RETURN_MODULE}'; this.form.record.value='{RETURN_ID}'; clearFormVars(this.form)" type="submit" name="button" value="  {APP.LBL_CANCEL_BUTTON_LABEL}  ">
+</div>
+</form>
+<script language="javascript">
+<!--
+var num_grp_sep = "{NUM_GRP_SEP}";
+var dec_sep = "{DEC_SEP}";
+var storedValue = 0;
+var timesheet_TOTAL = 0;
+
+function parseValue(value) {
+ var unformatted;
+ if (value != "") {
+  unformatted = unformatNumber(value, num_grp_sep, dec_sep);
+  value = parseFloat(unformatted);
+  if (isNaN(value)) {
+   value = 0;
+  }
+ } else {
+  value = 0;
+ }
+ return value;
+}
+
+function storeValue(value) {
+ storedValue = parseValue(value);
+}
+
+function updateTotals(value) {
+ value = parseValue(value);
+
+ var totalObj = document.getElementById('total');
+ timesheet_TOTAL = timesheet_TOTAL - storedValue + value;
+ totalObj.innerHTML = formatNumber(timesheet_TOTAL, num_grp_sep, dec_sep);
+}
+
+document.getElementById('total').innerHTML = '{TOTAL}';
+timesheet_TOTAL = parseValue('{TOTAL}');
+
+//-->
+</script>
+<!-- END: main -->
+

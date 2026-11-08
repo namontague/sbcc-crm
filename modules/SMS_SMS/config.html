@@ -1,0 +1,70 @@
+<!-- BEGIN: main -->
+<script type='text/javascript'>
+    function verify_data(){
+      //Check whether the sms login authentication exists/valid or not.
+      var error = false;
+      if(document.EditView.SMS_API_KEY.value == "") {
+        document.getElementById("SMS_API_KEYError").innerHTML = "Missing SMS API Key";
+        error = true;
+      }
+      if(document.EditView.SMS_API_SECRET.value == "") {
+         document.getElementById("SMS_API_SECRETError").innerHTML = "Missing SMS API Secret";
+         error = true;
+      }
+      return (error)?false:true;
+    }
+</script>
+<form name="EditView" id="EditView" method="POST" >
+    <input type="hidden" name="module" value="SMS_SMS">
+    <input type="hidden" name="action">
+    <input type="hidden" name="return_module" value="{RETURN_MODULE}">
+    <input type="hidden" name="return_action" value="{RETURN_ACTION}">
+    <input type="hidden" name="source_form" value="config" />
+    
+    <!--//BEGIN: SMS Integration getting the apikey and apipassword -->
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="edit view">
+	<tr>
+		<td>
+			<table width="100%" border="0" cellspacing="0" cellpadding="0">
+				<tr>
+					<th  align="left" scope="row" colspan="4"><h4>{MOD.LBL_SMS_SETTINGS}</h4></th>
+				</tr>
+				
+				<tr>
+					<td scope="row" width="17%">{MOD.LBL_SMS_SERVICE_BY}</td>
+                    <td scope="row" width="17%" colspan="2">SMSTECH</td>
+					<td scope="row" width="66%" colspan="2"></td>
+				</tr>
+                <tr>
+					<td scope="row" width="17%">{MOD.LBL_SMS_ACTIVE}</td>
+					<td scope="row" width="17%">
+                        <input type='hidden' name='SMS_ACTIVE' value='false'>
+                        <input type="checkbox" name="SMS_ACTIVE" id="SMS_ACTIVE" tabindex="0" {SMS_ACTIVE}>
+					</td>
+				</tr>
+				<tr>
+					<td scope="row" width="17%">{MOD.LBL_SMS_API_KEY}<span class="required">{APP.LBL_REQUIRED_SYMBOL}</span></td>
+					<td scope="row" width="17%"><input type="text" name="SMS_API_KEY" id="SMS_API_KEY" value="{SMS_API_KEY}"  size='35' tabindex="5"><br><span id="SMS_API_KEYError" class="required"></span></td>
+					<td scope="row" width="17%" colspan="2"></td>
+				</tr>
+				<tr>
+					<td scope="row" width="17%">{MOD.LBL_SMS_API_SECRET}<span class="required">{APP.LBL_REQUIRED_SYMBOL}</span></td>
+					<td scope="row" width="17%"><input type="text" name="SMS_API_SECRET" id="SMS_API_SECRET" value="{SMS_API_SECRET}"  size='35' tabindex="5"><br><span id="SMS_API_SECRETError" class="required"></span></td>
+					<td scope="row" width="17%" colspan="2"></td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</table>
+<!--//END: SMS Integration getting the apikey and apipassword -->
+    <P></P>
+
+    <div style="padding-top:2px;">
+        <input title="{APP.LBL_SAVE_BUTTON_TITLE}" class="button" onclick="var _form = document.getElementById('EditView'); _form.action.value='configSave'; if(verify_data())SUGAR.ajaxUI.submitForm(_form);return false;" type="submit" name="button" value=" {APP.LBL_SAVE_BUTTON_LABEL} ">
+        <input title="{APP.LBL_CANCEL_BUTTON_TITLE}" class="button" onclick="this.form.action.value='{RETURN_ACTION}'; this.form.module.value='{RETURN_MODULE}';" type="submit" name="button" value=" {APP.LBL_CANCEL_BUTTON_LABEL} ">
+    </div>
+
+</form>
+{JAVASCRIPT}
+<!-- END: main -->
+

@@ -1,0 +1,21 @@
+
+#contact_name,
+#primary_address_building_type,
+#primary_address_number,
+#primary_address_street,
+#primary_address_city,
+#primary_address_state,
+#primary_address_postalcode,
+#primary_address_country,
+#CampParticipants0emailAddress0 {
+    background-color: rgb(246, 246, 246); 
+    border-color: rgb(246, 246, 246); 
+    color:#000000;
+}
+
+#btn_contact_name,
+#btn_clr_contact_name,
+#CampParticipants0_email_widget_add,
+#CampParticipants0removeButton0 {
+    display:none;
+}

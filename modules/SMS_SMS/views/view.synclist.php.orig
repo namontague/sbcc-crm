@@ -1,0 +1,109 @@
+<?php
+if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
+
+
+require_once('include/MVC/View/SugarView.php');
+
+class SMS_SMSViewSyncList extends SugarView {
+
+ 	function SMS_SMSViewSyncList(){
+            parent::SugarView();
+ 	}
+
+ 	function process() {
+            $this->display();
+ 	}
+
+ 	function display(){
+            require_once('modules/SMS_SMS/SMSFunctions.php');
+            if(isset($_REQUEST['parent_id'],$_REQUEST['parent_module'])) {
+                $focus = BeanFactory::getBean($_REQUEST['parent_module'],$_REQUEST['parent_id']);
+            }
+            $data =null;
+            $data_return = array();
+            //create a sms list for this camp
+            //$this = camp/target list
+            
+            if(!isset($focus->sms_list_id) || empty($focus->sms_list_id)){
+                $data_return = array(
+                    'error' => array(
+                        'msg' => 'no list found'
+                    )
+                );
+                echo json_encode($data_return);
+                return;
+            }else{
+                if($_REQUEST['parent_module'] == 'Camps'){
+                    //add all targets to this list
+                    $prospect_list = $focus->get_linked_beans('prospect_lists','ProspectList');
+                    if(isset($prospect_list) && count($prospect_list) >1) {
+                        foreach($prospect_list as $p_list){
+                            if($p_list->camp_master_list){
+                                $prospect_list = $p_list;
+                                break;
+                            }
+                        }
+                    }elseif(isset($prospect_list) && count($prospect_list) ==1) {
+                        if($prospect_list[0]->camp_master_list) {
+                            $prospect_list = $prospect_list[0];
+                        }else{
+                            $data_return = array(
+                                    'error' => array(
+                                        'msg' => 'no master list found'
+                                    )
+                                );
+                            echo json_encode($data_return);
+                            return;
+                        }
+                    }
+                }elseif($_REQUEST['parent_module'] == 'ProspectLists'){
+                    $prospect_list = $focus;
+                }
+                
+                $targets = $prospect_list->get_linked_beans('contacts','Contacts');
+                if(!empty($targets)) {
+
+		    $GLOBALS['log']->debug(sizeof($targets) . " Targets found for sync list");
+
+                    if(($data = syncListFromButton($focus->sms_list_id,$targets)) != null){
+                        if(isset($data['success'])) {
+                            $obj = $data['success'];
+                            if($obj->id){
+                                $data_return = array(
+                                    'success' => array(
+                                        'id' => $obj->id,
+                                        'name' => $obj->name,
+                                        'members_active' => $obj->members_active
+                                    )
+                                );
+                                
+                            }else{
+                                $data_return = array(
+                                    'error' => array(
+                                        'msg' => $obj->error->description
+                                    )
+                                );
+                            }
+                        } else  {
+                            $data_return = array(
+                                'error' => array(
+                                    'msg' => $data['error']->description
+                                )
+                            );
+                        }        
+                    }
+                }
+            }
+            if($data == null){
+                return false;
+            }else{
+                $json = getJSONobj();
+                $decoded = array_map('from_html', $data_return); // Need to decode from html as the db manager encodes values by default
+                $out = $json->encode($decoded);
+                echo($out);
+            }
+ 	}
+       
+}
+
+?>

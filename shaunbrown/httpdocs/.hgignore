@@ -1,0 +1,15 @@
+syntax: glob
+.idea
+*.iml
+nbproject
+config.php
+config_override.php
+*.log
+cache/*/*
+custom_overrides
+*.log
+upload/*
+custom/modules/*/Ext
+custom/blowfish/*
+custom/modules/Connectors/*
+custom/modules/unified_search_modules_display.php

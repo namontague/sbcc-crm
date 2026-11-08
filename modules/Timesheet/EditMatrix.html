@@ -1,0 +1,180 @@
+<!-- BEGIN: main -->
+<script language="javascript" src="modules/Timesheet/ajax.js?1"></script>
+<form name="EditMatrix" method="GET" action="index.php">
+    <input type="hidden" name="module" value="Timesheet">
+    <input type="hidden" name="record" value="{ID}">
+    <input type="hidden" name="date">
+    <input type="hidden" name="action" value="EditMatrix">
+    <input type="hidden" name="return_module" value="{RETURN_MODULE}">
+    <input type="hidden" name="return_id" value="{RETURN_ID}">
+    <input type="hidden" name="return_action" value="{RETURN_ACTION}">
+</form>
+
+<form id="EditView" name="EditView" method="POST" action="index.php">
+    <input type="hidden" name="module" value="Timesheet">
+    <input type="hidden" name="record" value="{ID}">
+    <input type="hidden" name="isDuplicate" value=false>
+    <input type="hidden" name="action" value="SaveMatrix">
+    <input type="hidden" name="ajax">
+    <input type="hidden" name="sugar_body_only">
+    <input type="hidden" name="return_module" value="{RETURN_MODULE}">
+    <input type="hidden" name="return_id" value="{RETURN_ID}">
+    <input type="hidden" name="return_action" value="{RETURN_ACTION}">
+    <input type="hidden" name="return_url" value="index.php?module=Timesheet&action=index">
+
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+            <td style="padding-bottom: 2px;">
+                <input title="{APP.LBL_SAVE_BUTTON_TITLE}" accessKey="{APP.LBL_SAVE_BUTTON_KEY}" class="button" type="submit" name="button" value="  {APP.LBL_SAVE_BUTTON_LABEL}  " >
+                <input title="{APP.LBL_CANCEL_BUTTON_TITLE}" accessKey="{APP.LBL_CANCEL_BUTTON_KEY}" class="button" onclick="this.form.action.value='{RETURN_ACTION}'; this.form.module.value='{RETURN_MODULE}'; this.form.record.value='{RETURN_ID}'; clearFormVars(this.form)" type="submit" name="button" value="  {APP.LBL_CANCEL_BUTTON_LABEL}  ">
+            </td>
+            <td>
+                <input onclick="document.forms['EditMatrix'].date.value = '{PREVDATE}'; document.forms['EditMatrix'].submit();" type="button" class="button" value=" &laquo; {MOD.LBL_LAST_WEEK} ">
+
+                &nbsp;<span style="margin-left: 10px; margin-right: 10px; font-weight: bold; color: #990033">{MOD.LBL_WEEK} {WEEK}</span>&nbsp;
+
+                <input onclick="document.forms['EditMatrix'].date.value = '{NEXTDATE}';document.forms['EditMatrix'].submit();" type="button" class="button" value=" {MOD.LBL_NEXT_WEEK} &raquo; "></td>
+            <td align="right" nowrap><span class="required">{APP.LBL_REQUIRED_SYMBOL}</span>  {APP.NTC_REQUIRED}</td>
+            <td align="right">{EDIT_ADMIN}</td>
+        </tr>
+    </table>
+
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" class="tabForm">
+        <tr>
+            <td>
+                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                    <tr valign="top">
+                        <td class="dataLabel"></td>
+                        <!-- BEGIN: matrix_header -->
+                        <td class="dataLabel" nowrap>{MATRIX.day_of_week} {MATRIX.day}</td>
+                        <!-- END: matrix_header -->
+                        <td class="dataLabel" nowrap><b>{MOD.LBL_LIST_TOTAL}</b></td>
+                    </tr>
+
+                    <!-- BEGIN: matrix_row -->
+                    <tr>
+                        <td class="dataLabel">
+                            <!-- BEGIN: matrix_parent --><span style="margin-left:{MATRIX.depth} "></span><!-- END: matrix_parent -->
+
+                            <span style="{MATRIX.font}">{MATRIX.type}: <b><a href="index.php?module={MATRIX.type}&action=DetailView&record={MATRIX.id}">{MATRIX.name}</a></b></span>
+                            
+                            <!-- BEGIN: matrix_account_project -->
+                            (<a href="index.php?module=Accounts&action=DetailView&record={MATRIX_accounts.account_id}">{MATRIX_accounts.account_name}</a>)
+                            <!-- END: matrix_account_project -->
+
+                            <!-- BEGIN: matrix_account -->
+                            (<a href="index.php?module=Accounts&action=DetailView&record={MATRIX.account_id}">{MATRIX.account_name}</a>)
+                            <!-- END: matrix_account -->
+                        </td>
+
+                        <!-- BEGIN: matrix_subrow -->
+                        <td class="dataField" align="center">
+                            <input type="hidden" name="records[{MATRIX.id}.{MATRIX.date}]" value="{MATRIX.timesheet_id}" {MATRIX.disabled} />
+                                   <input type="text" size="3" onfocus="storeValue(this.value)" onblur="updateTotals(this.value, {MATRIX.rowid}, {MATRIX.colid})" name="data[{MATRIX.id}.{MATRIX.type}.{MATRIX.date}]" value="{MATRIX.actual}" {MATRIX.disabled}/></td>
+                        <!-- END: matrix_subrow -->
+                        <td class="dataLabel" align="center"><span id="row{MATRIX.rowid}"></span></td>
+                    </tr>
+                    <!-- END: matrix_row -->
+                    <tr>
+                        <td colspan="9"  style="border-top: 1px solid black">&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td class="dataLabel"><b>{MOD.LBL_LIST_TOTAL}</b></td>
+                        <td class="dataField" align="center"><span id="col0"></span></td>
+                        <td class="dataField" align="center"><span id="col1"></span></td>
+                        <td class="dataField" align="center"><span id="col2"></span></td>
+                        <td class="dataField" align="center"><span id="col3"></span></td>
+                        <td class="dataField" align="center"><span id="col4"></span></td>
+                        <td class="dataField" align="center"><span id="col5"></span></td>
+                        <td class="dataField" align="center"><span id="col6"></span></td>
+                        <td class="dataLabel" align="right"><span id="total"></span></td>
+                    </tr>
+                </table>
+            </td></tr></table>
+    <div style="padding-top: 2px">
+        <input title="{APP.LBL_SAVE_BUTTON_TITLE}" accessKey="{APP.LBL_SAVE_BUTTON_KEY}" class="button" type="submit" name="button" value="  {APP.LBL_SAVE_BUTTON_LABEL}  " >
+        <input title="{APP.LBL_CANCEL_BUTTON_TITLE}" accessKey="{APP.LBL_CANCEL_BUTTON_KEY}" class="button" onclick="this.form.action.value='{RETURN_ACTION}'; this.form.module.value='{RETURN_MODULE}'; this.form.record.value='{RETURN_ID}'; clearFormVars(this.form)" type="submit" name="button" value="  {APP.LBL_CANCEL_BUTTON_LABEL}  ">
+    </div>
+</form>
+<script language="javascript">
+    <!--
+    var num_grp_sep = "{NUM_GRP_SEP}";
+    var dec_sep = "{DEC_SEP}";
+    var storedValue = 0;
+    var timesheet_TOTAL = 0;
+    var timesheet_ROWTOTAL = new Array();
+    var timesheet_COLTOTAL = new Array();
+
+    function parseValue(value) {
+
+        var unformatted;
+        if (value != "") {
+            unformatted = unformatNumber(value, num_grp_sep, dec_sep);
+            value = parseFloat(unformatted);
+            if (isNaN(value)) {
+                value = 0;
+            }
+        } else {
+            value = 0;
+        }
+        return value;
+    }
+
+    function storeValue(value) {
+        storedValue = parseValue(value);
+    }
+
+    function updateTotals(value, row, col) {
+        value = parseValue(value);
+        eval("var rowObj = document.getElementById('row" + row + "');");
+
+        if (typeof timesheet_ROWTOTAL[row] == 'undefined') {
+            rowTotal = 0;
+        }
+        else {
+            rowTotal = parseValue(rowObj.innerHTML);
+        }
+
+
+        timesheet_ROWTOTAL[row] = rowTotal - storedValue + value;
+        rowObj.innerHTML =  formatNumber(timesheet_ROWTOTAL[row], num_grp_sep, dec_sep);
+
+        var totalObj = document.getElementById('total');
+
+        timesheet_TOTAL = parseValue(totalObj.innerHTML);
+        timesheet_TOTAL = timesheet_TOTAL - storedValue + value;
+        totalObj.innerHTML = formatNumber(timesheet_TOTAL, num_grp_sep, dec_sep);
+
+        eval("var colObj = document.getElementById('col" + col + "');");
+        if (typeof timesheet_COLTOTAL[col] == 'undefined') {
+            colTotal = 0;
+        }
+        else {
+            colTotal = parseValue(colObj.innerHTML);
+        }
+ 
+        /* var colTotal = 0;
+        if (colObj.innerHTML != "")
+        {
+            colTotal = parseFloat(colObj.innerHTML);
+        }
+        */
+        timesheet_COLTOTAL[col] = colTotal - storedValue + value;
+        colObj.innerHTML = formatNumber(timesheet_COLTOTAL[col], num_grp_sep, dec_sep);
+    }
+
+    <!-- BEGIN: total_row -->
+    document.getElementById('row{ROW_IDX}').innerHTML = '{ROW_VAL}';
+    timesheet_ROWTOTAL[{ROW_IDX}] = parseValue('{ROW_VAL}');
+    <!-- END: total_row -->
+    document.getElementById('total').innerHTML = '{TOTAL}';
+    timesheet_TOTAL = parseValue('{TOTAL}');
+
+    <!-- BEGIN: total_col -->
+    document.getElementById('col{COL_IDX}').innerHTML = '{COL_VAL}';
+    timesheet_COLTOTAL[{COL_IDX}] = parseValue('{COL_VAL}');
+    <!-- END: total_col -->
+    //-->
+</script>
+<!-- END: main -->
+

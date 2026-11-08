@@ -1,0 +1,71 @@
+
+<!-- BEGIN: main -->
+<script type="text/javascript" src="modules/Users/User.js"></script>
+<form name="ConfigureSettings" id="EditView" method="POST" >
+	<input type="hidden" name="module" value="ERPSync">
+	<input type="hidden" name="action">
+	<input type="hidden" name="return_module" value="{RETURN_MODULE}">
+	<input type="hidden" name="return_action" value="{RETURN_ACTION}">
+	<input type="hidden" name="source_form" value="config" />
+
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+	<tr>
+
+		<td style="padding-bottom: 2px;">
+			<input title="{APP.LBL_SAVE_BUTTON_TITLE}" accessKey="{APP.LBL_SAVE_BUTTON_KEY}" class="button" onclick="this.form.action.value='Save';return verify_data(this);" type="submit" name="button" value=" {APP.LBL_SAVE_BUTTON_LABEL} ">
+			<input title="{APP.LBL_CANCEL_BUTTON_TITLE}" accessKey="{APP.LBL_CANCEL_BUTTON_KEY}" class="button" onclick="this.form.action.value='{RETURN_ACTION}'; this.form.module.value='{RETURN_MODULE}';" type="submit" name="button" value=" {APP.LBL_CANCEL_BUTTON_LABEL} ">
+		</td>
+		<td align="right" nowrap>
+			<span class="required">{APP.LBL_REQUIRED_SYMBOL}</span> {APP.NTC_REQUIRED}
+		</td>
+	</tr>
+	<tr>
+		<td colspan=2>
+			<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tabForm">
+				<tr>
+					<td>
+						<table width="100%" border="0" cellspacing="0" cellpadding="0">
+							<tr>
+								<th align="left" class="dataLabel" colspan="4">
+									<h4 class="dataLabel">{MOD.LBL_ERPSYNC_TITLE}</h4>
+								</th>
+							</tr>
+                            <tr>
+								<td width="20%" class="dataLabel">
+									{MOD.LBL_ERPSYNC_TYPE} <span class="required">{APP.LBL_REQUIRED_SYMBOL}</span>
+								</td>
+								<td width="30%" class="dataField">
+									<select name='erpsync_type' tabindex='1'>{ERPSYNC_TYPE_OPTIONS}</select>
+								</td>
+                            </tr>
+							<tr>
+								<td width="20%" class="dataLabel">
+									{MOD.LBL_ERPSYNC_URL} <span class="required">{APP.LBL_REQUIRED_SYMBOL}</span>
+								</td>
+								<td width="80%" class="dataField" colspan="3">
+									<input name='erpsync_url' tabindex='1' size='60' maxlength='128' type="text" value="{erpsync_url}">
+								</td>
+							</tr>
+							<tr>
+								<td class="dataLabel">{MOD.LBL_ERPSYNC_USERNAME} <span class="required">{APP.LBL_REQUIRED_SYMBOL}</span></td>
+								<td class="dataField"><input name='erpsync_username' tabindex='1' size='25' maxlength='128' type="text" value="{erpsync_username}"></td>
+								<td class="dataLabel">{MOD.LBL_ERPSYNC_PASSWORD} <span class="required">{APP.LBL_REQUIRED_SYMBOL}</span></td>
+								<td class="dataField"><input name='erpsync_password' tabindex='1' size='25' maxlength='128' type="password" value="{erpsync_password}"></td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>	
+		</td>
+	</tr>
+</table>
+<P></P>
+
+<div style="padding-top:2px;">
+			<input title="{APP.LBL_SAVE_BUTTON_TITLE}" class="button" onclick="this.form.action.value='Save';return verify_data(this);" type="submit" name="button" value=" {APP.LBL_SAVE_BUTTON_LABEL} ">
+			<input title="{APP.LBL_CANCEL_BUTTON_TITLE}" class="button" onclick="this.form.action.value='{RETURN_ACTION}'; this.form.module.value='{RETURN_MODULE}';" type="submit" name="button" value=" {APP.LBL_CANCEL_BUTTON_LABEL} ">
+</div>
+
+	</form>
+{JAVASCRIPT}
+<!-- END: main -->

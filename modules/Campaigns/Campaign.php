@@ -340,6 +340,36 @@ class Campaign extends SugarBean {
 	}
 
 
+    // SBCC - "Not Viewed" subpanel on the campaign status page.
+    // Recipients who were sent the email (activity 'targeted') with no sign they opened it:
+    // no 'viewed', 'link' (clicked) or 'removed' (opted out) entry for the same send.
+    // Every activity for a send shares that send's target_tracker_key.
+    function track_log_not_viewed() {
+        $args = func_get_args();
+        $mkt_id = '';
+        foreach ($args as $arg) {
+            if (is_array($arg) && isset($arg['EMAIL_MARKETING_ID_VALUE'])) {
+                $mkt_id = $arg['EMAIL_MARKETING_ID_VALUE'];
+            }
+        }
+
+        $this->load_relationship('log_entries');
+        $query_array = $this->log_entries->getQuery(true);
+
+        $query_array['select'] = "SELECT campaign_log.* " . $this->recipientEmailSelect();
+        $query_array['from']  .= $this->recipientEmailJoin();
+        $query_array['where'] .= " AND campaign_log.activity_type = 'targeted' AND campaign_log.archived = 0";
+        if (!empty($mkt_id) && $mkt_id !== 'all') {
+            $query_array['where'] .= " AND campaign_log.marketing_id = '" . $this->db->quote($mkt_id) . "'";
+        }
+        $query_array['where'] .= " AND NOT EXISTS (SELECT 1 FROM campaign_log seen"
+            . " WHERE seen.target_tracker_key = campaign_log.target_tracker_key AND seen.deleted = 0"
+            . " AND seen.activity_type IN ('viewed', 'link', 'removed'))";
+
+        return implode(' ', $query_array);
+    }
+
+
 	function get_queue_items() {
         //get arguments being passed in
         $args = func_get_args();

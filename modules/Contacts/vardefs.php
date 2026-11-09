@@ -533,7 +533,8 @@ array (
             'options' => 'contact_roles_dom',
             'source' => 'non-db',
             'len' => '510',
-            'importable' => 'false',
+            // SBCC - allow role to be mapped on import (saved to accounts_contacts in Contact::save)
+            'importable' => 'true',
             'isMultiSelect' => true,
         ),
         'account_contact_roles_fields' =>
@@ -559,6 +560,8 @@ array (
             'type' => 'varchar',
             'source' => 'non-db',
             'vname' => 'LBL_ROLE',
+            // SBCC - placeholder for the relationship row id; hide from import mapping
+            'importable' => 'false',
         ),
         'account_contact_priority' =>
         array(

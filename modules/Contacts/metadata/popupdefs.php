@@ -75,6 +75,12 @@ $popupMeta = array(
 			'width' => '15%', 
 			'label' => 'LBL_LIST_TITLE',
 	        'default' => true), 
+		// SBCC - show the account role so role filter results can be checked
+		'ACCOUNT_CONTACT_ROLES' => array(
+			'width' => '15%',
+			'label' => 'LBL_ROLE',
+			'related_fields' => array('account_contact_roles_fields', 'account_contact_roles_id'),
+			'default' => true),
   		'LEAD_SOURCE' => array(
 			'width' => '15%', 
 			'label' => 'LBL_LEAD_SOURCE',
@@ -91,6 +97,8 @@ $popupMeta = array(
 		'title',
 		'lead_source',
 		'email',
+		// SBCC - filter by the contact's role on their account (multi-select)
+		'account_contact_roles',
 		array('name' => 'campaign_name', 'displayParams' => array('hideButtons'=>'true', 'size'=>30, 'class'=>'sqsEnabled sqsNoAutofill')),
 		array('name' => 'assigned_user_id', 'type' => 'enum', 'label' => 'LBL_ASSIGNED_TO', 'function' => array('name' => 'get_user_array', 'params' => array(false))),
 		'description',

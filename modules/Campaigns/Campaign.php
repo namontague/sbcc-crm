@@ -262,12 +262,27 @@ class Campaign extends SugarBean {
 		return $xtpl;
 	}
 
+    // SBCC - campaign status subpanels: show the recipient's primary email address.
+    // The recipient is campaign_log.target_id/target_type (related_id/related_type is the sent email or tracker).
+    protected function recipientEmailSelect()
+    {
+        return ', ea.email_address AS recipient_email ';
+    }
+
+    protected function recipientEmailJoin()
+    {
+        return " LEFT JOIN email_addr_bean_rel eabr ON eabr.deleted = 0 AND eabr.primary_address = 1"
+            . " AND eabr.bean_module = campaign_log.target_type AND eabr.bean_id = campaign_log.target_id"
+            . " LEFT JOIN email_addresses ea ON ea.deleted = 0 AND ea.id = eabr.email_address_id ";
+    }
+
     function track_log_leads()
     {
         $this->load_relationship('log_entries');
         $query_array = $this->log_entries->getQuery(true);
 
-        $query_array['select'] = 'SELECT campaign_log.* ';
+        $query_array['select'] = 'SELECT campaign_log.* ' . $this->recipientEmailSelect();
+        $query_array['from']  .= $this->recipientEmailJoin();
         $query_array['where']  = $query_array['where']. " AND activity_type = 'lead' AND archived = 0 AND target_id IS NOT NULL";
 
         return implode(' ', $query_array);
@@ -297,7 +312,8 @@ class Campaign extends SugarBean {
 		if (empty($type))
 			$type[0]='targeted';
 
-		$query_array['select'] ="SELECT campaign_log.* ";
+		$query_array['select'] ="SELECT campaign_log.* " . $this->recipientEmailSelect();
+		$query_array['from'] .= $this->recipientEmailJoin();
 		$query_array['where'] = $query_array['where']. " AND activity_type='{$type[0]}' AND archived=0";
         //add filtering by marketing id, if it exists
         if (!empty($mkt_id)) $query_array['where'] = $query_array['where']. " AND marketing_id ='$mkt_id' ";

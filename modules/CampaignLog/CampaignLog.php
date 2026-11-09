@@ -168,8 +168,9 @@ class CampaignLog extends SugarBean {
         // eintel - join email to query so that sorting via email is possible
         $query_arr = parent::create_new_list_query($order_by, $where, $filter, $params, $show_deleted, $join_type, $return_array, $parentbean, $singleSelect);
         $query_arr['select'] .= ", email_address as recipient_email";
-        $query_arr['from'] .= " LEFT JOIN email_addr_bean_rel eabr ON eabr.deleted = 0 AND eabr.bean_module = campaign_log.related_type"
-                . " AND eabr.bean_id = campaign_log.related_id AND primary_address = 1"
+        // SBCC - the recipient is target_id/target_type; related_id/related_type is the sent email or tracker
+        $query_arr['from'] .= " LEFT JOIN email_addr_bean_rel eabr ON eabr.deleted = 0 AND eabr.bean_module = campaign_log.target_type"
+                . " AND eabr.bean_id = campaign_log.target_id AND eabr.primary_address = 1"
                 . " LEFT JOIN email_addresses ea ON ea.deleted = 0 AND ea.id = eabr.email_address_id";
         return $query_arr;
     }

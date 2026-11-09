@@ -82,6 +82,7 @@ $viewdefs['Accounts']['DetailView'] = array(
             'name' => 'code',
             'customCode' => '<strong>{$fields.code.value}</strong>'
           ),
+          'association',
         ),
         array (
           array (

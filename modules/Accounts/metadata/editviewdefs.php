@@ -64,6 +64,7 @@ $viewdefs['Accounts']['EditView'] = array(
       array (
         array(
           'code',
+          'association',
         ),
         array (
           array (

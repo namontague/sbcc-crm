@@ -105,7 +105,115 @@ class CampaignLog extends SugarBean {
         	$temp_array['MARKETING_NAME'] = $row['name'];
         }
 
+        // SBCC - "Suppressed by Email Address or domain" subpanel: explain why the email wasn't sent
+        if ($this->activity_type == 'blocked') {
+            // the list view outputs this as-is, so escape it here (the reason itself is plain text)
+            $temp_array['SUPPRESSION_REASON'] = htmlspecialchars($this->get_suppression_reason(), ENT_QUOTES, 'UTF-8');
+        }
+
         return $temp_array;
+    }
+
+    /**
+     * SBCC - work out the likely reason a 'blocked' campaign log entry was suppressed.
+     * Mirrors the checks in EmailMan::sendEmail(), in the same order: address suppression lists,
+     * domain suppression lists, then an email address already used for this email marketing message.
+     * Worked out when displayed, so suppression lists changed since sending can change the answer.
+     */
+    function get_suppression_reason()
+    {
+        // bean values are HTML-encoded when loaded; work with the raw address. Returns plain text.
+        $email = strtolower(trim(html_entity_decode((string)$this->more_information, ENT_QUOTES, 'UTF-8')));
+        if ($email === '') {
+            return 'Unknown (no email address recorded)';
+        }
+        $suppression = $this->get_campaign_suppression_lists($this->campaign_id);
+
+        // 1. Address is on a "Suppression List - By Email Address" attached to the campaign
+        if (isset($suppression['addresses'][$email])) {
+            return 'Email address is on suppression list "' . $suppression['addresses'][$email] . '"';
+        }
+
+        // 2. Domain is on a "Suppression List - By Domain" attached to the campaign
+        $at_pos = strrpos($email, '@');
+        if ($at_pos !== false) {
+            foreach ($suppression['domains'] as $domain => $list_name) {
+                $pos = strrpos($email, $domain);
+                if ($pos !== false && $pos > $at_pos) {
+                    return 'Domain "' . $domain . '" is on suppression list "' . $list_name . '"';
+                }
+            }
+        }
+
+        // 3. Same email address already logged for this email marketing message
+        $query = "SELECT target_id, target_type, activity_type FROM campaign_log"
+            . " WHERE deleted = 0 AND more_information = " . $this->db->quoted($email)
+            . " AND marketing_id = " . $this->db->quoted($this->marketing_id)
+            . " AND id <> " . $this->db->quoted($this->id)
+            . " ORDER BY CASE WHEN activity_type = 'targeted' THEN 0 ELSE 1 END, activity_date";
+        $row = $this->db->fetchByAssoc($this->db->limitQuery($query, 0, 1));
+        if ($row) {
+            if ($row['target_id'] == $this->target_id && $row['target_type'] == $this->target_type) {
+                return 'Duplicate - this recipient is on more than one of the campaign\'s target lists';
+            }
+            $name = $this->get_related_name($row['target_id'], $row['target_type']);
+            if ($name == $row['target_id'] . $row['target_type']) {
+                $name = 'another recipient';
+            }
+            $name = html_entity_decode($name, ENT_QUOTES, 'UTF-8');
+            $own_name = html_entity_decode($this->get_related_name($this->target_id, $this->target_type), ENT_QUOTES, 'UTF-8');
+            // compare names ignoring case and spacing differences (double / non-breaking spaces)
+            $same_name = strcasecmp(trim(preg_replace('/[\s\x{00A0}]+/u', ' ', $name)), trim(preg_replace('/[\s\x{00A0}]+/u', ' ', $own_name))) == 0;
+            if ($row['activity_type'] == 'targeted' && $same_name) {
+                return 'Duplicate record - another ' . strtolower(preg_replace('/s$/', '', $row['target_type'])) . ' record with the same name and email was already sent it';
+            }
+            if ($row['activity_type'] == 'targeted') {
+                return 'Duplicate email address - already sent to ' . $name;
+            }
+            return 'Duplicate email address - shared with ' . $name;
+        }
+
+        return 'Unknown - no matching suppression list or duplicate found (lists may have changed since sending)';
+    }
+
+    /**
+     * SBCC - the campaign's suppression lists, loaded once per request (as EmailManDelivery.php does when sending).
+     * Joining from a single email address instead is very slow for addresses shared by thousands of records.
+     * @return array('addresses' => array(lower email => list name), 'domains' => array(lower domain => list name))
+     */
+    function get_campaign_suppression_lists($campaign_id)
+    {
+        static $cache = array();
+        if (isset($cache[$campaign_id])) {
+            return $cache[$campaign_id];
+        }
+        $lists = array('addresses' => array(), 'domains' => array());
+        $query = "SELECT pl.id, pl.name, pl.list_type, pl.domain_name FROM prospect_list_campaigns plc"
+            . " JOIN prospect_lists pl ON pl.id = plc.prospect_list_id AND pl.deleted = 0"
+            . " WHERE plc.campaign_id = " . $this->db->quoted($campaign_id) . " AND plc.deleted = 0"
+            . " AND pl.list_type IN ('exempt_address', 'exempt_domain')";
+        $result = $this->db->query($query);
+        while ($row = $this->db->fetchByAssoc($result, false)) {
+            if ($row['list_type'] == 'exempt_domain') {
+                $domain = strtolower(trim((string)$row['domain_name']));
+                if ($domain !== '' && !isset($lists['domains'][$domain])) {
+                    $lists['domains'][$domain] = $row['name'];
+                }
+                continue;
+            }
+            $email_query = "SELECT ea.email_address FROM prospect_lists_prospects plp"
+                . " JOIN email_addr_bean_rel eabr ON eabr.bean_id = plp.related_id AND eabr.bean_module = plp.related_type AND eabr.deleted = 0"
+                . " JOIN email_addresses ea ON ea.id = eabr.email_address_id AND ea.deleted = 0"
+                . " WHERE plp.prospect_list_id = " . $this->db->quoted($row['id']) . " AND plp.deleted = 0";
+            $email_result = $this->db->query($email_query);
+            while ($email_row = $this->db->fetchByAssoc($email_result, false)) {
+                $address = strtolower(trim((string)$email_row['email_address']));
+                if ($address !== '' && !isset($lists['addresses'][$address])) {
+                    $lists['addresses'][$address] = $row['name'];
+                }
+            }
+        }
+        return $cache[$campaign_id] = $lists;
     }
 
     //this function is called statically by the campaign_log subpanel.

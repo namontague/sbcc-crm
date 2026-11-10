@@ -14,4 +14,7 @@ $layout_defs['Campaigns']['subpanel_setup']['not_viewed'] = array(
     'sort_by' => 'campaign_log.id',
 );
 
+// SBCC - "Suppressed by Email Address or domain" subpanel: use the layout with the Likely Reason column
+$layout_defs['Campaigns']['subpanel_setup']['blocked']['subpanel_name'] = 'ForBlocked';
+
 ?>

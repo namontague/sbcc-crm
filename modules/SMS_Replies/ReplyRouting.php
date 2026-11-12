@@ -32,6 +32,9 @@ if(!defined('sugarEntry') || !sugarEntry) die('Not A Valid Entry Point');
  *  - If the scope has no matching tagged list and no catch-all, a new list is
  *    created on the fly (tagged with that exact reply) so nothing is silently
  *    lost - but a scope with its lists tagged up front never hits that.
+ *  - A later reply from a contact already filed for the same SMS only moves
+ *    them if it matches a tagged list; otherwise (chit-chat, questions) it is
+ *    just recorded against the contact - no catch-all, no new list.
  *
  * Lists made for one particular SMS (its "Create Reply Lists" option - see
  * CreateReplyLists.php) carry that SMS's id in reply_sms_id. If the SMS has
@@ -70,6 +73,19 @@ function routeSmsReplyToTargetList($reply)
     $targetListId = smsReply_findTaggedList($db, $scope, $normalizedResponse);
     $how = 'matched tagged list';
 
+    // A follow-up from someone already filed for this SMS (e.g. "Thank you!"
+    // or a question after their "Yes") is conversation, not a new answer:
+    // keep them where their first reply put them rather than dropping them in
+    // the catch-all or spawning a one-off "Replied: ..." list. A follow-up
+    // that does match a tagged keyword is still treated as an answer.
+    if (empty($targetListId)) {
+        $earlierListId = smsReply_findEarlierReplyList($db, $reply, $contactId);
+        if (!empty($earlierListId)) {
+            smsReply_recordRouting($db, $reply, $contactId, null);
+            return array(false, "follow-up reply; contact {$contactId} already filed in list {$earlierListId} for this SMS", $contactId);
+        }
+    }
+
     if (empty($targetListId)) {
         $targetListId = smsReply_findCatchAllList($db, $scope);
         $how = 'matched catch-all list';
@@ -92,6 +108,26 @@ function routeSmsReplyToTargetList($reply)
     smsReply_recordRouting($db, $reply, $contactId, $targetListId);
 
     return array(true, "added contact {$contactId} to list {$targetListId} ({$how})", $contactId);
+}
+
+/**
+ * The reply list an earlier reply from this contact to the same SMS was filed
+ * into, if any (still-existing lists only).
+ */
+function smsReply_findEarlierReplyList($db, $reply, $contactId)
+{
+    $result = $db->query("SELECT r.reply_list_id
+                          FROM sms_replies r
+                          INNER JOIN prospect_lists pl ON pl.id = r.reply_list_id AND pl.deleted = 0
+                          WHERE r.deleted = 0
+                              AND r.id != '" . $db->quote($reply->id) . "'
+                              AND r.sms_id = '" . $db->quote($reply->sms_id) . "'
+                              AND r.contact_id = '" . $db->quote($contactId) . "'
+                          ORDER BY r.received_at ASC
+                          LIMIT 1",
+        true, "Error looking up earlier replies for SMS reply {$reply->id}: ");
+    $row = $db->fetchByAssoc($result);
+    return !empty($row['reply_list_id']) ? $row['reply_list_id'] : null;
 }
 
 /**

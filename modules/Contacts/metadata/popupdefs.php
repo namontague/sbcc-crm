@@ -99,6 +99,8 @@ $popupMeta = array(
 		'email',
 		// SBCC - filter by the contact's role on their account (multi-select)
 		'account_contact_roles',
+		// SBCC - filter by the association of the contact's account (multi-select)
+		'account_association',
 		array('name' => 'campaign_name', 'displayParams' => array('hideButtons'=>'true', 'size'=>30, 'class'=>'sqsEnabled sqsNoAutofill')),
 		array('name' => 'assigned_user_id', 'type' => 'enum', 'label' => 'LBL_ASSIGNED_TO', 'function' => array('name' => 'get_user_array', 'params' => array(false))),
 		'description',

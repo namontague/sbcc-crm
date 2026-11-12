@@ -3,6 +3,11 @@
 
 
 
+$mod_strings['LBL_ACCOUNT_ASSOCIATION'] = 'Account Association';
+
+
+
+
 $mod_strings['LBL_CAMPS_SUBPANEL_TITLE'] = 'Staff Member For Camps';
 $mod_strings['LBL_CAMPS'] = 'Camps';
 $mod_strings['LBL_STATFF_MEMBER'] = 'Staff Member';

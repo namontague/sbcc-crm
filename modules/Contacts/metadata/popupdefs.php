@@ -101,6 +101,8 @@ $popupMeta = array(
 		'account_contact_roles',
 		// SBCC - filter by the association of the contact's account (multi-select)
 		'account_association',
+		// SBCC - filter by the billing state of the contact's account (multi-select)
+		'account_billing_state',
 		array('name' => 'campaign_name', 'displayParams' => array('hideButtons'=>'true', 'size'=>30, 'class'=>'sqsEnabled sqsNoAutofill')),
 		array('name' => 'assigned_user_id', 'type' => 'enum', 'label' => 'LBL_ASSIGNED_TO', 'function' => array('name' => 'get_user_array', 'params' => array(false))),
 		'description',
